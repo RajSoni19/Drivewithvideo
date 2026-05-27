@@ -178,8 +178,8 @@ function DriveShell({ user, folderId, onSignOut }: { user: User; folderId: strin
   const [loadError, setLoadError] = useState('');
   const [searchValue, setSearchValue] = useState('');
 
-  async function loadData() {
-    setLoading(true);
+  async function loadData(silent = false) {
+    if (!silent) setLoading(true);
     setLoadError('');
     try {
       const [treeResponse, contentsResponse] = await Promise.all([getTree(), getContents(currentFolderId)]);
@@ -188,7 +188,7 @@ function DriveShell({ user, folderId, onSignOut }: { user: User; folderId: strin
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : 'Unable to load folders and videos');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }
 
@@ -198,7 +198,7 @@ function DriveShell({ user, folderId, onSignOut }: { user: User; folderId: strin
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      void loadData();
+      void loadData(true);
     }, 5000);
 
     return () => window.clearInterval(timer);
