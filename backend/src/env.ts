@@ -11,6 +11,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   JWT_SECRET: z.string().min(16),
   APP_PUBLIC_URL: z.string().default('http://localhost:4000'),
+  CORS_ORIGINS: z.string().optional(),
   BUNNY_STREAM_LIBRARY_ID: z.coerce.number().int().positive(),
   BUNNY_STREAM_ACCESS_KEY: z.string().min(1),
   BUNNY_STREAM_READ_ONLY_KEY: z.string().min(1).optional(),

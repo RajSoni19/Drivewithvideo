@@ -1,0 +1,132 @@
+================================================================================
+  DRIVE × BUNNY STREAM — PROJECT NOTES
+================================================================================
+
+--------------------------------------------------------------------------------
+1. HOW TO RUN LOCALLY
+--------------------------------------------------------------------------------
+
+Prerequisites
+  - Node.js 20+
+  - A PostgreSQL database (e.g. Supabase free tier)
+  - A Bunny Stream account with a video library created
+
+Step 1 — Clone and install dependencies
+  npm install
+
+Step 2 — Set up environment variables
+  Copy .env.example to .env (root) and backend/.env, then fill in:
+
+  DATABASE_URL          PostgreSQL connection string
+                        e.g. postgresql://user:pass@host:5432/dbname
+
+  JWT_SECRET            Any long random string used to sign session cookies
+                        e.g. openssl rand -hex 32
+
+  PORT                  Port the backend listens on (default: 4000)
+
+  APP_PUBLIC_URL        Full URL of the backend in production
+                        e.g. https://yourdomain.com  (use http://localhost:4000 locally)
+
+  VITE_API_URL          Leave empty for local dev (frontend proxies to backend)
+                        Set to your backend URL in production builds
+
+  BUNNY_STREAM_LIBRARY_ID     Numeric ID of your Bunny Stream library
+  BUNNY_STREAM_ACCESS_KEY     Read/write API key from Bunny Stream dashboard
+  BUNNY_STREAM_READ_ONLY_KEY  Read-only API key (used for playback token)
+  BUNNY_STREAM_API_BASE       https://video.bunnycdn.com  (leave as-is)
+  BUNNY_PLAYER_BASE_URL       https://player.mediadelivery.net/embed  (leave as-is)
+
+Step 3 — Push the database schema
+  npm run prisma:push
+
+Step 4 — Start the dev servers (frontend + backend in parallel)
+  npm run dev
+
+  Backend runs on  http://localhost:4000
+  Frontend runs on http://localhost:5173  (Vite proxies /api to the backend)
+
+Step 5 — (Optional) Bunny webhook
+  In your Bunny Stream library settings, add a webhook pointing to:
+    http://<your-public-url>/api/bunny/webhook
+  Use a tool like ngrok to expose localhost during local development.
+  Without the webhook, the app falls back to polling every 90 seconds.
+
+Production build
+  npm run build
+  npm start          # serves the built frontend from the backend on PORT
+
+--------------------------------------------------------------------------------
+2. AI TOOLS USED
+--------------------------------------------------------------------------------
+
+Tools
+  - Cursor       — primary editor with inline AI completions and chat
+  - Kiro         — agentic task execution, file scaffolding, and refactoring
+  - GitHub Copilot — autocomplete for boilerplate and repetitive patterns
+
+Key prompts written during development
+
+  [Kiro / Cursor chat]
+  "You are an expert full-stack developer. Complete this project end-to-end
+   without any mistakes with proper working functionality, as if delivering
+   to a client. Build a complete project with an attractive UI and all
+   features fully working."
+
+  [Cursor inline / Copilot]
+  "Generate a Prisma schema for Users, Folders (nested, self-referential),
+   and Videos with Bunny Stream metadata fields and a VideoStatus enum."
+
+  [Kiro]
+  "Wire up the TUS resumable upload flow: create a Bunny video via the API,
+   return TUS credentials to the frontend, and track status through
+   UPLOADING → PROCESSING → SUCCESS / FAILED using both webhooks and
+   a polling fallback."
+
+  [Cursor chat]
+  "Build a React sidebar with a collapsible folder tree, breadcrumb
+   navigation, stats cards, and a video grid with status pills and a
+   progress bar. Use Framer Motion for hover and modal animations."
+
+  [Kiro]
+  "Add a delete video endpoint that removes the video from Bunny Stream
+   first, then deletes the local database record, and surfaces errors
+   gracefully on the frontend."
+
+--------------------------------------------------------------------------------
+3. WHAT I'D IMPROVE WITH MORE TIME
+--------------------------------------------------------------------------------
+
+Upload experience
+  - Switch the direct-upload path to TUS resumable uploads end-to-end so
+    large files survive network interruptions.
+  - Show per-chunk progress from the TUS client instead of a fake counter.
+  - Support multi-file queue uploads with individual status rows.
+
+Folder management
+  - Add rename and move (drag-and-drop) for folders and videos.
+  - Soft-delete / trash bin with a 30-day recovery window.
+
+Video features
+  - Subtitle / caption upload and display inside the Bunny player.
+  - Video trimming or chapter markers stored as metadata.
+  - Shareable public links with optional password protection.
+
+Auth & teams
+  - OAuth (Google / GitHub) sign-in via a provider like Auth.js.
+  - Workspace / team model so multiple users can share a library.
+  - Role-based access (viewer vs. editor vs. admin).
+
+Performance & reliability
+  - Paginate folder contents and video grids (cursor-based pagination).
+  - Redis-backed job queue (BullMQ) to decouple upload processing from
+    the HTTP request lifecycle.
+  - Rate limiting on auth endpoints to prevent brute-force attacks.
+  - End-to-end tests with Playwright covering the upload → playback flow.
+
+Observability
+  - Structured logging (Pino) with request IDs for tracing.
+  - Error tracking via Sentry on both frontend and backend.
+  - Uptime monitoring and alerting for the Bunny webhook endpoint.
+
+================================================================================
