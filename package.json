@@ -1,0 +1,22 @@
+{
+  "name": "drive-bunny-stream",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "postinstall": "npm run prisma:generate --workspace backend",
+    "prebuild": "npm run prisma:generate --workspace backend",
+    "dev": "concurrently -k -n api,web -c cyan,magenta \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
+    "build": "npm run build --workspace frontend && npm run build --workspace backend",
+    "start": "npm run start --workspace backend",
+    "lint": "npm run lint --workspace backend && npm run lint --workspace frontend",
+    "prisma:generate": "npm run prisma:generate --workspace backend",
+    "prisma:push": "npm run prisma:push --workspace backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
