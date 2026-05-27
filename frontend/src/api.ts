@@ -3,7 +3,8 @@ import type { FolderContentsResponse, FolderTreeNode, User, VideoRecord } from '
 const apiBase = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || '/api';
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${apiBase}${path}`, {
+  const requestUrl = `${apiBase}${path}`;
+  const response = await fetch(requestUrl, {
     credentials: 'include',
     headers: {
       ...(init?.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
@@ -13,7 +14,15 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
+  const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
+  const isJson = contentType.includes('application/json');
+  const data = text && isJson ? JSON.parse(text) : null;
+
+  if (text && !isJson) {
+    throw new Error(
+      `API returned non-JSON response (${response.status}) from ${requestUrl}. Check VITE_API_URL and backend deployment URL.`
+    );
+  }
 
   if (!response.ok) {
     const message = data?.error || data?.message || `Request failed with ${response.status}`;
@@ -24,9 +33,15 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function getSessionUser() {
-  const response = await fetch(`${apiBase}/auth/me`, { credentials: 'include' });
+  const requestUrl = `${apiBase}/auth/me`;
+  const response = await fetch(requestUrl, { credentials: 'include' });
   if (!response.ok) {
     throw new Error('Not signed in');
+  }
+
+  const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
+  if (!contentType.includes('application/json')) {
+    throw new Error(`API returned non-JSON response from ${requestUrl}. Check VITE_API_URL.`);
   }
 
   const data = (await response.json()) as { user: User };
