@@ -190,6 +190,10 @@ export function mapWebhookStatus(status: number) {
 }
 
 export function validateWebhookSignature(rawBody: string, headers: Headers | Record<string, string | string[] | undefined>) {
+  if (!env.BUNNY_STREAM_READ_ONLY_KEY) {
+    return false;
+  }
+
   const signature = getHeader(headers, 'x-bunnystream-signature');
   const version = getHeader(headers, 'x-bunnystream-signature-version');
   const algorithm = getHeader(headers, 'x-bunnystream-signature-algorithm');

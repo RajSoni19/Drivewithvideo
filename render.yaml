@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: drive-bunny-stream-backend
+    runtime: node
+    rootDir: .
+    buildCommand: npm install --include=dev && npm run prisma:generate --workspace backend && npm run build --workspace backend
+    startCommand: npm run start --workspace backend
+    envVars:
+      - key: NODE_ENV
+        value: production
