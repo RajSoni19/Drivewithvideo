@@ -8,7 +8,9 @@ const server = app.listen(env.PORT, () => {
 });
 
 const syncTimer = setInterval(() => {
-  void runBunnyPollingSync();
+  void runBunnyPollingSync().catch((error) => {
+    console.error('Bunny polling sync failed:', error);
+  });
 }, 90_000);
 
 process.on('SIGTERM', async () => {

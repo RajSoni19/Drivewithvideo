@@ -391,6 +391,11 @@ app.get('/api/content', requireUser, async (request, response) => {
   }
 });
 
+app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
+  const message = error instanceof Error ? error.message : 'Internal server error';
+  response.status(500).json({ error: message });
+});
+
 const clientDist = path.resolve(projectRoot, 'frontend', 'dist');
 const clientIndex = path.join(clientDist, 'index.html');
 
