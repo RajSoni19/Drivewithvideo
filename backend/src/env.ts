@@ -1,9 +1,14 @@
 import dotenv from 'dotenv';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-dotenv.config({ path: path.resolve(process.cwd(), '..', '.env') });
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const backendEnvPath = path.resolve(currentDir, '..', '.env');
+const repoEnvPath = path.resolve(currentDir, '..', '..', '.env');
+
+dotenv.config({ path: backendEnvPath });
+dotenv.config({ path: repoEnvPath });
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
